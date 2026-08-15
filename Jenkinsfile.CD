@@ -1,0 +1,185 @@
+﻿pipeline {
+    agent any
+
+    parameters {
+        string(
+            name: 'CI_BUILD_NUMBER',
+            defaultValue: '',
+            description: 'Successful TechLaunch-CI build number to deploy'
+        )
+
+        string(
+            name: 'RESOURCE_GROUP',
+            defaultValue: 'rg-techlaunch',
+            description: 'Azure Resource Group'
+        )
+
+        string(
+            name: 'APP_NAME',
+            defaultValue: 'techlaunch-app',
+            description: 'Azure App Service name'
+        )
+    }
+
+    environment {
+        CI_JOB = 'TechLaunch-CI'
+    }
+
+    stages {
+
+        stage('Validate CI Build Number') {
+            steps {
+                script {
+                    if (!params.CI_BUILD_NUMBER?.trim()) {
+                        error(
+                            'CI_BUILD_NUMBER is required. ' +
+                            'Enter a successful TechLaunch-CI build number.'
+                        )
+                    }
+
+                    echo "Using CI build: ${params.CI_BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Retrieve CI Artifact') {
+            steps {
+                script {
+                    def artifactName =
+                        "techlaunch-${params.CI_BUILD_NUMBER}.zip"
+
+                    echo "Retrieving artifact: ${artifactName}"
+
+                    copyArtifacts(
+                        projectName: env.CI_JOB,
+                        selector: specific(params.CI_BUILD_NUMBER),
+                        filter: artifactName,
+                        fingerprintArtifacts: true
+                    )
+
+                    if (!fileExists(artifactName)) {
+                        error(
+                            "CI artifact was not retrieved: ${artifactName}"
+                        )
+                    }
+
+                    env.DEPLOY_ARTIFACT = artifactName
+
+                    echo "CI artifact retrieved successfully."
+                }
+            }
+        }
+
+        stage('Azure Login') {
+            steps {
+                withCredentials([
+                    azureServicePrincipal(
+                        credentialsId: 'azure-techlaunch-sp',
+                        subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                        clientIdVariable: 'AZURE_CLIENT_ID',
+                        clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                        tenantIdVariable: 'AZURE_TENANT_ID'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+
+                        echo "Authenticating to Azure using service principal..."
+
+                        az login \
+                          --service-principal \
+                          --username "$AZURE_CLIENT_ID" \
+                          --password "$AZURE_CLIENT_SECRET" \
+                          --tenant "$AZURE_TENANT_ID" \
+                          --output none
+
+                        az account set \
+                          --subscription "$AZURE_SUBSCRIPTION_ID"
+
+                        echo "Azure authentication successful."
+
+                        az account show \
+                          --query "{subscription:id,tenant:tenantId}" \
+                          -o table
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Artifact') {
+            steps {
+                withCredentials([
+                    azureServicePrincipal(
+                        credentialsId: 'azure-techlaunch-sp',
+                        subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
+                        clientIdVariable: 'AZURE_CLIENT_ID',
+                        clientSecretVariable: 'AZURE_CLIENT_SECRET',
+                        tenantIdVariable: 'AZURE_TENANT_ID'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+
+                        echo "Deploying CI artifact:"
+                        echo "$DEPLOY_ARTIFACT"
+
+                        az webapp deploy \
+                          --resource-group "$RESOURCE_GROUP" \
+                          --name "$APP_NAME" \
+                          --src-path "$DEPLOY_ARTIFACT" \
+                          --type zip
+                    '''
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    set -e
+
+                    URL="https://${APP_NAME}.azurewebsites.net/health"
+
+                    echo "Checking application health:"
+                    echo "$URL"
+
+                    sleep 20
+
+                    curl \
+                      --fail \
+                      --show-error \
+                      --silent \
+                      --retry 10 \
+                      --retry-delay 10 \
+                      --connect-timeout 15 \
+                      --max-time 30 \
+                      "$URL"
+
+                    echo ""
+                    echo "TechLaunch health check PASSED."
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "============================================================"
+            echo "TECHLAUNCH CD SUCCESS"
+            echo "============================================================"
+            echo "CI build deployed: ${params.CI_BUILD_NUMBER}"
+            echo "Artifact: ${env.DEPLOY_ARTIFACT}"
+            echo "Application: https://${params.APP_NAME}.azurewebsites.net"
+        }
+
+        failure {
+            echo "============================================================"
+            echo "TECHLAUNCH CD FAILED"
+            echo "============================================================"
+        }
+
+        always {
+            sh 'rm -f techlaunch-*.zip || true'
+        }
+    }
+}
