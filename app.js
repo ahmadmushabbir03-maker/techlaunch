@@ -1,3 +1,4 @@
+require('dotenv').config();
 var createError = require("http-errors");
 var express = require("express");
 var mongoose = require("mongoose");
@@ -8,6 +9,7 @@ const { format } = require("date-fns");
 
 // 1st party dependencies
 var indexRouter = require("./routes/index");
+var apiRouter = require("./routes/api");
 
 async function getApp() {
 
@@ -39,6 +41,7 @@ async function getApp() {
   app.locals.format = format;
 
   app.use("/", indexRouter);
+app.use("/api", apiRouter);
   app.use("/js", express.static(__dirname + "/node_modules/bootstrap/dist/js")); // redirect bootstrap JS
   app.use(
     "/css",

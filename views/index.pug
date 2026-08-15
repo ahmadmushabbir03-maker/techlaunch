@@ -1,44 +1,366 @@
 extends layout
 
 block content
+  // ============================================================
+  // TECHLAUNCH TOP PLATFORM NAVIGATION
+  // ============================================================
 
-  form(action='./addTask' method='POST' class='form-registration')
-    div(class='row my-3')
-        div(class='col-md-2 align-bottom')
-          label(for="taskName" class='fs-5') New task
-        div(class='col-md-8')
-          input(class="form-control form-control-sm" type="text" name='taskName', placeholder="Enter new task here" )
-        div(class='col-md-2 text-end')
-          button(class='btn btn-success btn-sm' type='submit') Add task
+  section.top-platform-nav
+    .container
 
+      .platform-nav-header
+        div
+          span.section-kicker PLATFORM CONTROL CENTER
+          h2 Explore TechLaunch
+          p Your career, projects, achievements and DevOps platform.
 
-  h5(class='my-2') Current tasks
+        .platform-status
+          span.live-dot
+          | Platform Online
 
-  div(class='row mb-3 border-bottom border-3')
-    div(class='col-md-6 fw-bold') Task
-    div(class='col-md-2 fw-bold') Created
-    div(class='col-md-4 fw-bold') Action
+      .platform-nav-grid
 
-  each task in currentTasks
-    div(class='row mb-2')
-      div(class='col-sm-6') #{task.taskName}
-      div(class='col-sm-2') #{format(task.createDate, "yyyy-MM-dd")}
-      div(class='col-sm-2')
-        form(action='./completeTask' method='POST' class='form-registration')
-          input(type='hidden' name='_id' value=`${task._id}`)
-          button(class='btn btn-primary btn-sm mx-1' type='submit') Complete
-      div(class='col-sm-2')
-        form(action='./deleteTask' method='POST' class='form-registration')
-          input(type='hidden' name='_id' value=`${task._id}`)
-          button(class='btn btn-danger btn-sm mx-1') Delete
+        a.platform-nav-card(href="/career")
+          .platform-nav-icon
+            | ◉
+          .platform-nav-content
+            span.platform-nav-label CAREER
+            strong Career & Jobs
+            small Market insights and opportunities
+          span.platform-nav-arrow
+            | →
 
-  h5(class='my-2') Completed tasks
-  div(class='row mb-3 border-bottom border-3')
-    div(class='col-sm-8 fw-bold') Task
-    div(class='col-sm-2 fw-bold') Created
-    div(class='col-sm-2 fw-bold') Completed
-  each task in completedTasks
-    div(class='row mb-3')
-      div(class='col-sm-8') #{task.taskName}
-      div(class='col-sm-2') #{format(task.createDate, "yyyy-MM-dd")}
-      div(class='col-sm-2') #{format(task.completedDate, "yyyy-MM-dd")}
+        a.platform-nav-card(href="/projects")
+          .platform-nav-icon
+            | ◆
+          .platform-nav-content
+            span.platform-nav-label PORTFOLIO
+            strong Projects
+            small Cloud and DevOps projects
+          span.platform-nav-arrow
+            | →
+
+        a.platform-nav-card(href="/badges")
+          .platform-nav-icon
+            | ★
+          .platform-nav-content
+            span.platform-nav-label ACHIEVEMENTS
+            strong Badges
+            small Technical readiness achievements
+          span.platform-nav-arrow
+            | →
+
+        a.platform-nav-card(href="/architecture")
+          .platform-nav-icon
+            | ◈
+          .platform-nav-content
+            span.platform-nav-label DEVOPS
+            strong Architecture
+            small Jenkins, Terraform and Azure flow
+          span.platform-nav-arrow
+            | →
+
+        a.platform-nav-card(href="/pricing")
+          .platform-nav-icon
+            | $
+          .platform-nav-content
+            span.platform-nav-label PLANS
+            strong Pricing
+            small Bootcamp and marketing plans
+          span.platform-nav-arrow
+            | →
+
+  .container
+
+    // HERO
+    section.hero-section
+      .row.align-items-center.g-4
+        .col-lg-8
+          .eyebrow
+            span.live-dot
+            | CAREER INTELLIGENCE PLATFORM
+
+          h1.hero-title
+            | Build the skills.
+            br
+            span.hero-gradient Build your future.
+
+          p.hero-description
+            | Track your IT skills, discover opportunities, build
+            | real-world projects and measure your career readiness.
+
+          .hero-actions
+            a.btn.btn-primary.btn-lg(href="#skills")
+              | Explore My Skills
+            a.btn.btn-outline-light.btn-lg.ms-2(href="#projects")
+              | View Projects
+
+        .col-lg-4
+          .readiness-card
+            .readiness-top
+              span Readiness Score
+              span.status-badge Job Ready
+
+            .score-circle
+              .score-number 78
+              .score-percent %
+
+            h5.mt-3.mb-1 DevOps Engineer
+            p.mb-0 Target market: Toronto 🇨🇦
+
+    // MARKET SELECTOR
+    section.section-block
+      .section-heading
+        div
+          span.section-label MARKET
+          h2 Compare Your Target Market
+        span.section-subtitle Updated career insights
+
+      .market-grid
+        .market-card.active
+          .market-flag 🇨🇦
+          .market-info
+            h4 Toronto
+            p Canada
+          span.market-arrow →
+
+        .market-card
+          .market-flag 🇮🇳
+          .market-info
+            h4 India
+            p Technology Market
+          span.market-arrow →
+
+    // STATS
+    section.section-block
+      .row.g-4
+        .col-md-6.col-xl-3
+          .metric-card.blue
+            .metric-icon ◈
+            span.metric-label Skill Readiness
+            strong 78%
+            small +12% this month
+
+        .col-md-6.col-xl-3
+          .metric-card.purple
+            .metric-icon ◆
+            span.metric-label Skills Tracked
+            strong 12
+            small 4 skills improving
+
+        .col-md-6.col-xl-3
+          .metric-card.pink
+            .metric-icon ★
+            span.metric-label Projects
+            strong 5
+            small 2 deployed
+
+        .col-md-6.col-xl-3
+          .metric-card.green
+            .metric-icon ✓
+            span.metric-label Applications
+            strong 8
+            small 3 interviews
+
+    // SKILLS
+    section.section-block#skills
+      .section-heading
+        div
+          span.section-label SKILLS
+          h2 Your Skill Gap
+        a.section-link(href="#") View all →
+
+      .row.g-4
+        .col-lg-8
+          .glass-panel
+            .skill-row
+              .skill-name
+                span Azure
+                strong 88%
+              .progress
+                .progress-bar.azure(style="width:88%")
+
+            .skill-row
+              .skill-name
+                span Jenkins
+                strong 90%
+              .progress
+                .progress-bar.jenkins(style="width:90%")
+
+            .skill-row
+              .skill-name
+                span Terraform
+                strong 72%
+              .progress
+                .progress-bar.terraform(style="width:72%")
+
+            .skill-row
+              .skill-name
+                span Docker
+                strong 68%
+              .progress
+                .progress-bar.docker(style="width:68%")
+
+            .skill-row
+              .skill-name
+                span Kubernetes
+                strong 55%
+              .progress
+                .progress-bar.kubernetes(style="width:55%")
+
+        .col-lg-4
+          .gap-panel
+            .gap-header
+              span Skill Gap
+              span.warning-badge 3 gaps
+
+            h4 Kubernetes
+            p Build stronger container orchestration knowledge.
+
+            .gap-score
+              span Current
+              strong 55%
+
+            a.btn.btn-primary.w-100(href="#")
+              | Generate Learning Plan
+
+    // PROJECTS
+    section.section-block#projects
+      .section-heading
+        div
+          span.section-label PORTFOLIO
+          h2 Featured Projects
+        a.section-link(href="#") View portfolio →
+
+      .row.g-4
+        .col-lg-4
+          .project-card
+            .project-top
+              span.project-icon 🚀
+              span.project-status deployed
+            h4 Azure Node.js Deployment
+            p
+              | Production deployment using Azure App Service,
+              | Jenkins CI/CD and Terraform.
+
+            .tech-tags
+              span Azure
+              span Jenkins
+              span Terraform
+              span Node.js
+
+            .project-progress
+              .project-progress-label
+                span Completion
+                strong 100%
+              .progress
+                .progress-bar.azure(style="width:100%")
+
+        .col-lg-4
+          .project-card
+            .project-top
+              span.project-icon ☁
+              span.project-status deployed
+            h4 Cloud Infrastructure
+            p
+              | Infrastructure as Code project using Terraform
+              | and Azure cloud resources.
+
+            .tech-tags
+              span Terraform
+              span Azure
+              span IaC
+
+            .project-progress
+              .project-progress-label
+                span Completion
+                strong 90%
+              .progress
+                .progress-bar.terraform(style="width:90%")
+
+        .col-lg-4
+          .project-card
+            .project-top
+              span.project-icon ⚡
+              span.project-status building
+            h4 CI/CD Automation
+            p
+              | Automated build, testing, packaging and deployment
+              | workflow using Jenkins.
+
+            .tech-tags
+              span Jenkins
+              span CI/CD
+              span GitHub
+
+            .project-progress
+              .project-progress-label
+                span Completion
+                strong 75%
+              .progress
+                .progress-bar.jenkins(style="width:75%")
+
+    // JOB MATCH
+    section.section-block
+      .section-heading
+        div
+          span.section-label OPPORTUNITIES
+          h2 Recommended Roles
+        a.section-link(href="#") Explore jobs →
+
+      .row.g-4
+        .col-lg-6
+          .job-card
+            .job-logo.azure-logo AZ
+            .job-content
+              h4 DevOps Engineer
+              p Toronto, Canada · Hybrid
+              .job-tags
+                span Azure
+                span Terraform
+                span Jenkins
+            .match-score
+              strong 86%
+              small Match
+
+        .col-lg-6
+          .job-card
+            .job-logo.data-logo DE
+            .job-content
+              h4 Cloud Engineer
+              p Toronto, Canada · Remote
+              .job-tags
+                span Azure
+                span Docker
+                span Kubernetes
+            .match-score
+              strong 79%
+              small Match
+
+    // SYSTEM HEALTH
+    section.section-block
+      .health-panel
+        .health-title
+          div
+            span.section-label PLATFORM
+            h3 System Health
+          .healthy-status
+            span.live-dot
+            | All Systems Operational
+
+        .health-grid
+          .health-item
+            span Node.js API
+            strong ✓ Healthy
+
+          .health-item
+            span MongoDB
+            strong ✓ Connected
+
+          .health-item
+            span Azure App Service
+            strong ✓ Running
+
+          .health-item
+            span Jenkins Pipeline
+            strong ✓ Ready

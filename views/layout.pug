@@ -1,20 +1,113 @@
 doctype html
-html
+html(lang="en")
   head
-    title= title
-    link(rel='stylesheet', href='/css/bootstrap.css')
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body(class='p-2')
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="theme-color" content="#07111f")
+    meta(name="description" content="TechLaunch - Professional DevOps Career Platform")
+    title= title ? title + " | TechLaunch" : "TechLaunch"
 
-    main(class='container' style='max-width: 720px')
-        div(class='d-flex align-items-center p-3 my-1 bg-azure-light-gray rounded shadow-sm')
-            img(class='me-3', src='/images/Azure-A-48px-product.svg', alt='', width='48', height='48')
-            div(class='1h-1')
-                h1(class='h3 mb-0 text-azure-blue lh-1') Azure Todo List
-                small(class='text-black') ExpressJS/MongoDB Sample Application
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet")
 
+    link(
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    )
 
-        block content
-    script(src='/js/bootstrap.min.js')
+    link(
+      rel="stylesheet"
+      href="/stylesheets/style.css"
+    )
 
+  body
+    .background-orb.orb-one
+    .background-orb.orb-two
+    .background-orb.orb-three
 
+    nav.navbar.navbar-expand-lg.tech-navbar
+      .container
+
+        a.navbar-brand.tech-brand(href="/")
+          span.brand-icon TL
+          span.brand-text Tech
+            span.brand-accent Launch
+
+        button.navbar-toggler(
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#techNavbar"
+          aria-controls="techNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        )
+          span.navbar-toggler-icon
+
+        #techNavbar.collapse.navbar-collapse
+
+          ul.navbar-nav.mx-auto.mb-2.mb-lg-0
+
+            li.nav-item
+              a.nav-link(href="/")
+                span.nav-icon ◈
+                | Dashboard
+
+            li.nav-item
+              a.nav-link(href="/career")
+                span.nav-icon ◉
+                | Career & Jobs
+
+            li.nav-item
+              a.nav-link(href="/projects")
+                span.nav-icon ◆
+                | Projects
+
+          .d-flex.align-items-center.gap-3
+
+            .creator-signature
+              span.creator-label BUILT BY
+              strong Ahmad Mushabbir
+
+            .market-pill
+              span.live-dot
+              span Market Insights
+
+            .profile-avatar AM
+
+    main.tech-main
+      block content
+
+    footer.tech-footer
+      .container
+        .row.align-items-center.g-4
+
+          .col-md-6
+            .footer-brand
+              span.brand-icon.small TL
+              span.brand-text Tech
+                span.brand-accent Launch
+
+            p.footer-description
+              | Professional IT career readiness, DevOps skills
+              | and project delivery platform.
+
+          .col-md-6.text-md-end
+
+            .footer-status
+              span.live-dot
+              | Platform Online
+
+            p.copyright
+              | © Ahmad Mushabbir. All rights reserved.
+
+            p.footer-tech
+              | Node.js • MongoDB • Azure • Jenkins • Terraform
+
+    script(
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    )
+
+    script(src="/javascripts/demo.js")
+
+    script(src="/javascripts/addons.js")

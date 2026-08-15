@@ -1,0 +1,204 @@
+extends layout
+
+block content
+
+  section.page-hero
+    .container
+      .page-hero-copy
+        span.hero-kicker SYSTEM ARCHITECTURE
+        h1
+          | From
+          span.gradient-text code to cloud.
+        p
+          | Explore the complete architecture behind TechLaunch,
+          | including source control, CI/CD automation, infrastructure
+          | provisioning, application hosting, database services and health verification.
+
+        .hero-actions
+          a.btn.btn-primary.btn-lg(href="/projects")
+            | View Deployment
+          a.btn.btn-outline-light.btn-lg.ms-2(href="/")
+            | Dashboard
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker APPLICATION ARCHITECTURE
+          h2 End-to-End Architecture
+          p The target production delivery architecture for the project.
+
+      .architecture-board
+
+        .architecture-column.source-column
+          .architecture-node.primary
+            .architecture-icon GH
+            strong GitHub
+            span Source Repository
+
+          .architecture-arrow ↓
+
+          .architecture-node
+            .architecture-icon NJ
+            strong Node.js
+            span Application
+
+        .architecture-arrow horizontal → 
+
+        .architecture-column.ci-column
+          .architecture-node.pipeline-node-main
+            .architecture-icon JK
+            strong Jenkins
+            span CI/CD Automation
+
+          .architecture-mini-grid
+            .mini-node Clone
+            .mini-node Build
+            .mini-node Test
+            .mini-node Artifact
+
+        .architecture-arrow horizontal →
+
+        .architecture-column.azure-column
+          .architecture-node.azure-node
+            .architecture-icon AZ
+            strong Azure
+            span Cloud Platform
+
+          .architecture-arrow ↓
+
+          .architecture-mini-grid
+            .mini-node Terraform
+            .mini-node App Service
+            .mini-node MongoDB
+            .mini-node Health Check
+
+  section.section-space.pipeline-section
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker CONTINUOUS INTEGRATION
+          h2 Jenkins CI Pipeline
+
+      .interactive-pipeline
+
+        .interactive-stage.active
+          .interactive-stage-number 01
+          strong Clone
+          span GitHub
+
+        .interactive-connector
+
+        .interactive-stage
+          .interactive-stage-number 02
+          strong Install
+          span npm install
+
+        .interactive-connector
+
+        .interactive-stage
+          .interactive-stage-number 03
+          strong Build
+          span Node.js
+
+        .interactive-connector
+
+        .interactive-stage
+          .interactive-stage-number 04
+          strong Test
+          span Validation
+
+        .interactive-connector
+
+        .interactive-stage
+          .interactive-stage-number 05
+          strong Package
+          span Artifact
+
+      button.btn.btn-primary.btn-lg.mt-4#runPipeline(type="button")
+        | Run CI Simulation
+
+      .pipeline-console#pipelineConsole
+        span.console-prompt >
+        | Ready for pipeline execution...
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker CONTINUOUS DELIVERY
+          h2 Jenkins CD Pipeline
+
+      .cd-flow-grid
+
+        .cd-card
+          span.cd-number 01
+          strong Retrieve Artifact
+          p Download the build artifact produced by the CI pipeline.
+
+        .cd-card
+          span.cd-number 02
+          strong Azure Authentication
+          p Authenticate using the configured service principal.
+
+        .cd-card
+          span.cd-number 03
+          strong App Service Deployment
+          p Deploy the Node.js application package to Azure.
+
+        .cd-card
+          span.cd-number 04
+          strong Health Verification
+          p Call the application health endpoint and validate HTTP 200.
+
+  section.section-space
+    .container
+
+      .requirements-board
+        span.section-kicker PROJECT REQUIREMENTS
+        h2 Architecture Requirement Coverage
+
+        .requirement-row
+          span ✓
+          div
+            strong GitHub Source
+            small Public repository cloned by Jenkins
+
+        .requirement-row
+          span ✓
+          div
+            strong Jenkins CI
+            small Install, build, test and package
+
+        .requirement-row
+          span ✓
+          div
+            strong Artifact Publishing
+            small Build artifact shared with CD
+
+        .requirement-row
+          span ✓
+          div
+            strong Terraform
+            small Azure infrastructure provisioning
+
+        .requirement-row
+          span ✓
+          div
+            strong Azure Service Principal
+            small Secure deployment authentication
+
+        .requirement-row
+          span ✓
+          div
+            strong Jenkins CD
+            small Artifact deployment to Azure App Service
+
+        .requirement-row
+          span ✓
+          div
+            strong Health Verification
+            small Automated application endpoint validation

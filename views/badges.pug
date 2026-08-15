@@ -1,0 +1,132 @@
+extends layout
+
+block content
+
+  section.page-hero
+    .container
+      .page-hero-grid
+        .page-hero-copy
+          span.hero-kicker ACHIEVEMENT CENTER
+          h1
+            | Prove your
+            span.gradient-text technical readiness.
+          p
+            | TechLaunch converts practical cloud, DevOps and
+            | application delivery skills into a visual achievement profile.
+
+          .hero-actions
+            a.btn.btn-primary.btn-lg(href="/")
+              | Dashboard
+            a.btn.btn-outline-light.btn-lg.ms-2(href="/projects")
+              | View Projects
+
+        .hero-stat-card
+          span.hero-stat-label ACHIEVEMENTS UNLOCKED
+          strong.hero-stat-number 08
+          .hero-progress
+            span(style="width:80%")
+          p
+            | Industry-oriented achievements demonstrating
+            | practical engineering capability.
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker TECHNICAL ACHIEVEMENTS
+          h2 Your DevOps Badge Collection
+          p Each badge represents a practical project capability.
+
+      .badge-grid
+
+        .achievement-card.unlocked
+          .achievement-icon ☁
+          span.achievement-status UNLOCKED
+          h3 Azure Cloud Ready
+          p Demonstrated Azure cloud application deployment knowledge.
+          .achievement-tech Azure
+          button.badge-action(type="button" data-badge="Azure Cloud Ready")
+            | View Achievement
+
+        .achievement-card.unlocked
+          .achievement-icon ⚙
+          span.achievement-status UNLOCKED
+          h3 Jenkins Automation
+          p Built CI/CD automation concepts using Jenkins pipelines.
+          .achievement-tech Jenkins
+          button.badge-action(type="button" data-badge="Jenkins Automation")
+            | View Achievement
+
+        .achievement-card.unlocked
+          .achievement-icon ◈
+          span.achievement-status UNLOCKED
+          h3 Infrastructure as Code
+          p Designed repeatable cloud infrastructure using Terraform.
+          .achievement-tech Terraform
+          button.badge-action(type="button" data-badge="Infrastructure as Code")
+            | View Achievement
+
+        .achievement-card.unlocked
+          .achievement-icon ◉
+          span.achievement-status UNLOCKED
+          h3 MongoDB Integration
+          p Connected a Node.js application to MongoDB persistence.
+          .achievement-tech MongoDB
+          button.badge-action(type="button" data-badge="MongoDB Integration")
+            | View Achievement
+
+        .achievement-card.unlocked
+          .achievement-icon ◇
+          span.achievement-status UNLOCKED
+          h3 Node.js Engineer
+          p Developed a backend application using Express and Node.js.
+          .achievement-tech Node.js
+          button.badge-action(type="button" data-badge="Node.js Engineer")
+            | View Achievement
+
+        .achievement-card.unlocked
+          .achievement-icon ◆
+          span.achievement-status UNLOCKED
+          h3 REST API Builder
+          p Created application endpoints for health and data services.
+          .achievement-tech REST API
+          button.badge-action(type="button" data-badge="REST API Builder")
+            | View Achievement
+
+        .achievement-card.locked
+          .achievement-icon 🔒
+          span.achievement-status LOCKED
+          h3 Kubernetes Ready
+          p Complete the Kubernetes learning milestone to unlock.
+          .achievement-tech Kubernetes
+          button.badge-action(type="button" data-badge="Kubernetes Ready")
+            | Learning Required
+
+        .achievement-card.unlocked
+          .achievement-icon 🚀
+          span.achievement-status UNLOCKED
+          h3 Deployment Engineer
+          p Demonstrated application delivery and deployment workflow.
+          .achievement-tech DevOps
+          button.badge-action(type="button" data-badge="Deployment Engineer")
+            | View Achievement
+
+  section.section-space
+    .container
+      .achievement-summary
+        .summary-item
+          strong 87%
+          span Overall readiness
+
+        .summary-item
+          strong 7
+          span Technologies demonstrated
+
+        .summary-item
+          strong 3
+          span Cloud / DevOps domains
+
+        .summary-item
+          strong 1
+          span Production-style project

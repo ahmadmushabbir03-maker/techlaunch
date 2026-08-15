@@ -1,0 +1,212 @@
+extends layout
+
+block content
+
+  section.page-hero
+    .container
+      .page-hero-grid
+
+        .page-hero-copy
+          span.hero-kicker CAREER INTELLIGENCE
+          h1
+            | Find your next
+            span.gradient-text career opportunity.
+          p
+            | Compare your DevOps readiness with market expectations
+            | across Toronto and India.
+
+          .hero-actions
+            a.btn.btn-primary.btn-lg(href="/projects")
+              | View My Projects
+            a.btn.btn-outline-light.btn-lg.ms-2(href="/")
+              | Back to Dashboard
+
+        .hero-stat-card
+          span.hero-stat-label READINESS SCORE
+          strong.hero-stat-number 82%
+          .hero-progress
+            span(style="width:82%")
+          p
+            | Strong foundation for an entry-level
+            | Cloud / DevOps career.
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker SKILL INTELLIGENCE
+          h2 Your DevOps Skill Profile
+          p Track the technologies that matter for your target market.
+
+      .career-skill-grid
+
+        .career-skill-card
+          .skill-card-top
+            div
+              span.skill-category CLOUD
+              h3 Azure
+            strong.skill-score 88%
+          .career-progress
+            span(style="width:88%")
+          p Strong cloud foundation for Azure-focused roles.
+
+        .career-skill-card
+          .skill-card-top
+            div
+              span.skill-category CI/CD
+              h3 Jenkins
+            strong.skill-score 90%
+          .career-progress
+            span(style="width:90%")
+          p Excellent automation and pipeline readiness.
+
+        .career-skill-card
+          .skill-card-top
+            div
+              span.skill-category IaC
+              h3 Terraform
+            strong.skill-score 72%
+          .career-progress
+            span(style="width:72%")
+          p Recommended area for continued improvement.
+
+        .career-skill-card
+          .skill-card-top
+            div
+              span.skill-category CONTAINERS
+              h3 Kubernetes
+            strong.skill-score.warning 55%
+          .career-progress.warning
+            span(style="width:55%")
+          p Highest-priority learning opportunity.
+
+  section.section-space.market-section
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker MARKET INTELLIGENCE
+          h2 India vs Toronto
+          p Understand where your current skills fit.
+
+      .market-comparison-grid
+
+        .market-large-card.canada
+          .market-card-header
+            .market-country 🇨🇦
+            div
+              span.market-label TARGET MARKET
+              h3 Toronto
+
+          .market-metric
+            span Cloud demand
+            strong HIGH
+
+          .market-metric
+            span Priority platform
+            strong Azure
+
+          .market-metric
+            span Infrastructure
+            strong Terraform
+
+          .market-metric
+            span Automation
+            strong Jenkins
+
+          .market-footer
+            | Best aligned with your current Azure + Jenkins profile.
+
+        .market-large-card.india
+          .market-card-header
+            .market-country 🇮🇳
+            div
+              span.market-label ALTERNATIVE MARKET
+              h3 India
+
+          .market-metric
+            span Cloud demand
+            strong HIGH
+
+          .market-metric
+            span Priority platform
+            strong Azure
+
+          .market-metric
+            span Containers
+            strong Docker
+
+          .market-metric
+            span Automation
+            strong Jenkins
+
+          .market-footer
+            | Strong opportunity for Cloud and DevOps automation roles.
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker OPPORTUNITY MATCH
+          h2 Recommended Jobs
+          p Roles matched against your current technical profile.
+
+      .jobs-grid
+
+        .professional-job-card
+          .job-company-icon AZ
+          .job-main
+            span.job-location TORONTO · CANADA
+            h3 DevOps Engineer
+            p Cloud Technologies
+            .job-tags
+              span Azure
+              span Jenkins
+              span Terraform
+          .job-match
+            strong 86%
+            span MATCH
+
+        .professional-job-card
+          .job-company-icon CL
+          .job-main
+            span.job-location TORONTO · CANADA
+            h3 Cloud Engineer
+            p Digital Systems
+            .job-tags
+              span Azure
+              span Docker
+              span Kubernetes
+          .job-match
+            strong 79%
+            span MATCH
+
+        .professional-job-card
+          .job-company-icon IN
+          .job-main
+            span.job-location BENGALURU · INDIA
+            h3 DevOps Engineer
+            p Technology Solutions
+            .job-tags
+              span Azure
+              span Jenkins
+              span Docker
+          .job-match
+            strong 84%
+            span MATCH
+
+        .professional-job-card
+          .job-company-icon HY
+          .job-main
+            span.job-location HYDERABAD · INDIA
+            h3 Cloud Engineer
+            p Enterprise Cloud
+            .job-tags
+              span Terraform
+              span Azure
+              span Linux
+          .job-match
+            strong 77%
+            span MATCH

@@ -1,0 +1,202 @@
+extends layout
+
+block content
+
+  section.page-hero
+    .container
+      .page-hero-grid
+
+        .page-hero-copy
+          span.hero-kicker DEVOPS PORTFOLIO
+          h1
+            | Build.
+            span.gradient-text Deploy.
+            | Grow.
+          p
+            | A professional portfolio of cloud, automation and
+            | application delivery projects.
+
+          .hero-actions
+            a.btn.btn-primary.btn-lg(href="/")
+              | Dashboard
+            a.btn.btn-outline-light.btn-lg.ms-2(href="/career")
+              | Career & Jobs
+
+        .hero-stat-card
+          span.hero-stat-label PROJECT READINESS
+          strong.hero-stat-number 94%
+          .hero-progress
+            span(style="width:94%")
+          p
+            | Application, infrastructure and CI/CD
+            | implementation progressing successfully.
+
+  section.section-space
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker PROJECT PORTFOLIO
+          h2 Cloud & DevOps Projects
+          p Demonstrating practical engineering and deployment capability.
+
+      .portfolio-grid
+
+        .portfolio-card.featured
+          .portfolio-top
+            span.project-status deployed
+              | ● DEPLOYED
+            span.project-number 01
+
+          h3 Azure Node.js Application
+          p
+            | Production-style Node.js and MongoDB application designed
+            | for deployment to Azure App Service.
+
+          .technology-stack
+            span Node.js
+            span MongoDB
+            span Azure
+            span Express
+
+          .project-progress-label
+            span Completion
+            strong 100%
+
+          .portfolio-progress
+            span(style="width:100%")
+
+          a.btn.btn-sm.btn-primary(href="/")
+            | Open Application
+
+        .portfolio-card
+          .portfolio-top
+            span.project-status deployed
+              | ● READY
+            span.project-number 02
+
+          h3 Azure Infrastructure
+          p
+            | Infrastructure as Code architecture for repeatable
+            | Azure environment provisioning.
+
+          .technology-stack
+            span Terraform
+            span Azure
+            span IaC
+
+          .project-progress-label
+            span Completion
+            strong 90%
+
+          .portfolio-progress
+            span(style="width:90%")
+
+        .portfolio-card
+          .portfolio-top
+            span.project-status building
+              | ● BUILDING
+            span.project-number 03
+
+          h3 Jenkins CI/CD Automation
+          p
+            | Automated source checkout, dependency installation,
+            | build, testing, artifact packaging and release.
+
+          .technology-stack
+            span Jenkins
+            span GitHub
+            span Node.js
+
+          .project-progress-label
+            span Completion
+            strong 75%
+
+          .portfolio-progress
+            span(style="width:75%")
+
+        .portfolio-card
+          .portfolio-top
+            span.project-status connected
+              | ● CONNECTED
+            span.project-number 04
+
+          h3 MongoDB Integration
+          p
+            | Persistent application data delivered through a RESTful
+            | Node.js API layer.
+
+          .technology-stack
+            span MongoDB
+            span Mongoose
+            span REST API
+
+          .project-progress-label
+            span Completion
+            strong 100%
+
+          .portfolio-progress
+            span(style="width:100%")
+
+  section.section-space.pipeline-section
+    .container
+
+      .section-heading-row
+        div
+          span.section-kicker DELIVERY AUTOMATION
+          h2 CI/CD Pipeline Architecture
+          p The complete delivery lifecycle planned for Jenkins.
+
+      .real-pipeline
+
+        .pipeline-card.complete
+          .pipeline-icon 01
+          span SOURCE
+          strong GitHub
+
+        .pipeline-connector.complete
+
+        .pipeline-card.complete
+          .pipeline-icon 02
+          span BUILD
+          strong Node.js
+
+        .pipeline-connector.complete
+
+        .pipeline-card.complete
+          .pipeline-icon 03
+          span TEST
+          strong Validation
+
+        .pipeline-connector.complete
+
+        .pipeline-card.complete
+          .pipeline-icon 04
+          span ARTIFACT
+          strong Package
+
+        .pipeline-connector
+
+        .pipeline-card
+          .pipeline-icon 05
+          span DEPLOY
+          strong Azure
+
+        .pipeline-connector
+
+        .pipeline-card
+          .pipeline-icon 06
+          span VERIFY
+          strong Health
+
+      .deployment-banner
+        .deployment-pulse
+        div
+          strong Deployment Target
+          span Azure App Service + MongoDB
+        .deployment-tech
+          | Jenkins
+          | •
+          | Terraform
+          | •
+          | Azure
