@@ -10,42 +10,44 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                echo 'Checking out TechLaunch from GitHub...'
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci'
+                echo 'Installing Node.js dependencies...'
+                bat 'npm.cmd ci'
             }
         }
 
         stage('Validate Application') {
             steps {
-                sh 'node --check app.js'
-                sh 'node --check routes/index.js'
-                sh 'node --check routes/api.js'
+                echo 'Validating Node.js application syntax...'
+
+                bat 'node --check app.js'
+                bat 'node --check routes/index.js'
+                bat 'node --check routes/api.js'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'npm test'
+                echo 'Running TechLaunch automated tests...'
+                bat 'npm.cmd test'
             }
         }
 
         stage('Package Application') {
             steps {
-                sh '''
-                    rm -f "${ARTIFACT}"
-                    zip -r "${ARTIFACT}" . \
-                      -x ".git/*" \
-                      -x ".env" \
-                      -x "node_modules/*" \
-                      -x "*.zip" \
-                      -x "terraform/.terraform/*" \
-                      -x "terraform/*.tfstate*" \
-                      -x "terraform/*.tfplan"
+                echo 'Creating deployment artifact...'
+
+                bat '''
+                    if exist "%ARTIFACT%" del /f /q "%ARTIFACT%"
+
+                    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+                      "Compress-Archive -Path app.js,bin,models,public,routes,scripts,views,package.json,package-lock.json,.env.example,TECHLAUNCH.md,Jenkinsfile,Jenkinsfile.CD,docs,test -DestinationPath '%ARTIFACT%' -Force"
                 '''
 
                 archiveArtifacts artifacts: "${ARTIFACT}", fingerprint: true
@@ -54,17 +56,22 @@ pipeline {
     }
 
     post {
+
         success {
-            echo "TECHLAUNCH CI SUCCESS"
+            echo '============================================================'
+            echo 'TECHLAUNCH CI SUCCESS'
+            echo '============================================================'
             echo "Artifact published: ${ARTIFACT}"
         }
 
         failure {
-            echo "TECHLAUNCH CI FAILED"
+            echo '============================================================'
+            echo 'TECHLAUNCH CI FAILED'
+            echo '============================================================'
         }
 
         always {
-            sh 'rm -f *.zip || true'
+            bat 'if exist "%ARTIFACT%" del /f /q "%ARTIFACT%"'
         }
     }
 }
