@@ -4,8 +4,8 @@ pipeline {
     parameters {
         string(
             name: 'CI_BUILD_NUMBER',
-            defaultValue: '',
-            description: 'Successful TechLaunch-CI build number to deploy'
+            defaultValue: '6',
+            description: 'Successful TechLaunch-CI build number'
         )
 
         string(
@@ -31,10 +31,7 @@ pipeline {
             steps {
                 script {
                     if (!params.CI_BUILD_NUMBER?.trim()) {
-                        error(
-                            'CI_BUILD_NUMBER is required. ' +
-                            'Enter a successful TechLaunch-CI build number.'
-                        )
+                        error('CI_BUILD_NUMBER is required.')
                     }
 
                     echo "Using CI build: ${params.CI_BUILD_NUMBER}"
@@ -81,25 +78,28 @@ pipeline {
                         tenantIdVariable: 'AZURE_TENANT_ID'
                     )
                 ]) {
-                    sh '''
-                        set -e
+                    bat '''
+                        @echo off
+                        echo Authenticating to Azure...
 
-                        echo "Authenticating to Azure using service principal..."
-
-                        az login \
-                          --service-principal \
-                          --username "$AZURE_CLIENT_ID" \
-                          --password "$AZURE_CLIENT_SECRET" \
-                          --tenant "$AZURE_TENANT_ID" \
+                        az login ^
+                          --service-principal ^
+                          --username "%AZURE_CLIENT_ID%" ^
+                          --password "%AZURE_CLIENT_SECRET%" ^
+                          --tenant "%AZURE_TENANT_ID%" ^
                           --output none
 
-                        az account set \
-                          --subscription "$AZURE_SUBSCRIPTION_ID"
+                        if errorlevel 1 exit /b 1
 
-                        echo "Azure authentication successful."
+                        az account set ^
+                          --subscription "%AZURE_SUBSCRIPTION_ID%"
 
-                        az account show \
-                          --query "{subscription:id,tenant:tenantId}" \
+                        if errorlevel 1 exit /b 1
+
+                        echo Azure authentication successful.
+
+                        az account show ^
+                          --query "{subscription:id,tenant:tenantId}" ^
                           -o table
                     '''
                 }
@@ -117,17 +117,21 @@ pipeline {
                         tenantIdVariable: 'AZURE_TENANT_ID'
                     )
                 ]) {
-                    sh '''
-                        set -e
+                    bat '''
+                        @echo off
 
-                        echo "Deploying CI artifact:"
-                        echo "$DEPLOY_ARTIFACT"
+                        echo Deploying artifact:
+                        echo %DEPLOY_ARTIFACT%
 
-                        az webapp deploy \
-                          --resource-group "$RESOURCE_GROUP" \
-                          --name "$APP_NAME" \
-                          --src-path "$DEPLOY_ARTIFACT" \
+                        az webapp deploy ^
+                          --resource-group "%RESOURCE_GROUP%" ^
+                          --name "%APP_NAME%" ^
+                          --src-path "%DEPLOY_ARTIFACT%" ^
                           --type zip
+
+                        if errorlevel 1 exit /b 1
+
+                        echo Azure deployment command completed.
                     '''
                 }
             }
@@ -135,34 +139,58 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                sh '''
-                    set -e
+                powershell '''
+                    $ErrorActionPreference = "Stop"
 
-                    URL="https://${APP_NAME}.azurewebsites.net/health"
+                    $url = "https://$env:APP_NAME.azurewebsites.net/health"
 
-                    echo "Checking application health:"
-                    echo "$URL"
+                    Write-Host "Checking application health:"
+                    Write-Host $url
 
-                    sleep 20
+                    Write-Host "Waiting for Azure App Service to warm up..."
+                    Start-Sleep -Seconds 20
 
-                    curl \
-                      --fail \
-                      --show-error \
-                      --silent \
-                      --retry 10 \
-                      --retry-delay 10 \
-                      --connect-timeout 15 \
-                      --max-time 30 \
-                      "$URL"
+                    $success = $false
 
-                    echo ""
-                    echo "TechLaunch health check PASSED."
+                    for ($i = 1; $i -le 10; $i++) {
+
+                        Write-Host "Health check attempt $i of 10..."
+
+                        try {
+                            $response = Invoke-WebRequest `
+                                -Uri $url `
+                                -UseBasicParsing `
+                                -TimeoutSec 30
+
+                            Write-Host "HTTP Status: $($response.StatusCode)"
+                            Write-Host "Response: $($response.Content)"
+
+                            if ($response.StatusCode -eq 200) {
+                                $success = $true
+                                break
+                            }
+                        }
+                        catch {
+                            Write-Host "Health check attempt failed."
+                            Write-Host $_.Exception.Message
+                        }
+
+                        Start-Sleep -Seconds 10
+                    }
+
+                    if (-not $success) {
+                        throw "TechLaunch health check FAILED."
+                    }
+
+                    Write-Host ""
+                    Write-Host "TechLaunch health check PASSED."
                 '''
             }
         }
     }
 
     post {
+
         success {
             echo "============================================================"
             echo "TECHLAUNCH CD SUCCESS"
@@ -179,7 +207,11 @@ pipeline {
         }
 
         always {
-            sh 'rm -f techlaunch-*.zip || true'
+            powershell '''
+                if (Test-Path "techlaunch-*.zip") {
+                    Remove-Item "techlaunch-*.zip" -Force -ErrorAction SilentlyContinue
+                }
+            '''
         }
     }
 }
