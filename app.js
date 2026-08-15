@@ -49,7 +49,14 @@ app.use("/api", apiRouter);
   ); // redirect CSS bootstrap
 
   // catch 404 and forward to error handler
-  app.use(function (req, res, next) {
+  
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    application: 'TechLaunch'
+  });
+});
+app.use(function (req, res, next) {
     next(createError(404));
   });
 
