@@ -261,9 +261,7 @@ pipeline {
                     Write-Host "Deployment artifact created successfully."
                 '''
 
-                archiveArtifacts `
-                    artifacts: "${ARTIFACT}",
-                    fingerprint: true
+                archiveArtifacts artifacts: "${ARTIFACT}", fingerprint: true
             }
         }
     }
