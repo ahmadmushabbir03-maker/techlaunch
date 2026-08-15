@@ -71,7 +71,7 @@ pipeline {
             steps {
                 withCredentials([
                     azureServicePrincipal(
-                        credentialsId: 'azure-techlaunch-sp',
+                        credentialsId: '41c41413-cef6-44ef-a611-7fad35d21b57',
                         subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
                         clientIdVariable: 'AZURE_CLIENT_ID',
                         clientSecretVariable: 'AZURE_CLIENT_SECRET',
@@ -110,7 +110,7 @@ pipeline {
             steps {
                 withCredentials([
                     azureServicePrincipal(
-                        credentialsId: 'azure-techlaunch-sp',
+                        credentialsId: '41c41413-cef6-44ef-a611-7fad35d21b57',
                         subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
                         clientIdVariable: 'AZURE_CLIENT_ID',
                         clientSecretVariable: 'AZURE_CLIENT_SECRET',
