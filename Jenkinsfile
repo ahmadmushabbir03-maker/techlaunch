@@ -152,7 +152,6 @@ pipeline {
 
                     Push-Location $staging
 
-                    npm.cmd ci --omit=dev
 
                     if ($LASTEXITCODE -ne 0) {
                         throw "npm ci --omit=dev failed."
@@ -160,6 +159,12 @@ pipeline {
 
                     Pop-Location
 
+                    $stagingNodeModules = Join-Path $staging "node_modules"
+
+                    if (Test-Path $stagingNodeModules) {
+                        Remove-Item $stagingNodeModules -Recurse -Force
+                        Write-Host "Removed node_modules from deployment staging."
+                    }
                     $artifact = Join-Path $env:WORKSPACE $env:ARTIFACT
 
                     if (Test-Path $artifact) {

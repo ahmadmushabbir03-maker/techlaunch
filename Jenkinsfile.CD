@@ -79,6 +79,19 @@ pipeline {
                     )
                 ]) {
                     bat '''
+                    @echo off
+
+                    echo Enabling Azure/Oryx build automation...
+
+                    az webapp config appsettings set ^
+                      --resource-group "rg-techlaunch" ^
+                      --name "%APP_NAME%" ^
+                      --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+
+                    if errorlevel 1 exit /b 1
+
+                    echo Azure/Oryx build automation enabled.
+                bat '''
                         @echo off
                         echo Authenticating to Azure...
 
