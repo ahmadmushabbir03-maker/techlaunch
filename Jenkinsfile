@@ -225,7 +225,13 @@ pipeline {
 
                     foreach ($required in $requiredFiles) {
 
-                        if (-not ($entries -contains $required)) {
+                        $normalizedRequired = $required.Replace("/", "\").ToLower()
+
+                        $found = $entries | Where-Object {
+                            $_.Replace("/", "\").ToLower() -eq $normalizedRequired
+                        }
+
+                        if (-not $found) {
 
                             $archive.Dispose()
 
