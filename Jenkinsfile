@@ -205,7 +205,7 @@ pipeline {
                             )
 
                             $relativePath = $relativePath.TrimStart(
-                                [char[]]"\/"
+                            $relativePath = $relativePath.TrimStart([char]92).TrimStart([char]47)
                             )
 
                             $zipPath = $relativePath.Replace(
