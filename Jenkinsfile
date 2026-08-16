@@ -1,4 +1,4 @@
-pipeline {
+﻿pipeline {
 
     agent any
 
@@ -212,17 +212,25 @@ pipeline {
                     Write-Host "PASS: No nested ZIP found."
 
                     Write-Host ""
-                    Write-Host "=== CHECKING REQUIRED APPLICATION FILES ==="`r`n`r`n                    $requiredFiles = @("package.json","package-lock.json","app.js","bin/www","routes/index.js","routes/api.js")`r`n`r`n                    foreach ($required in $requiredFiles) {`r`n                        $requiredPath = Join-Path $staging $required`r`n`r`n                        if (-not (Test-Path $requiredPath -PathType Leaf)) {`r`n                            throw "Required file missing from deployment staging: $required"`r`n                        }`r`n`r`n                        Write-Host "PASS: $required"`r`n                    }`r`n`r`n                    Write-Host ""`r`n                    Write-Host "All required application files are present in deployment staging."`r`n`r`n                    $archive.Dispose()
+                    Write-Host "=== CHECKING REQUIRED APPLICATION FILES ==="
 
-                            throw "Required file missing from artifact: $required"
+                    $requiredFiles = @("package.json","package-lock.json","app.js","bin/www","routes/index.js","routes/api.js")
+
+                    foreach ($required in $requiredFiles) {
+                        $requiredPath = Join-Path $staging $required
+
+                        if (-not (Test-Path $requiredPath -PathType Leaf)) {
+                            throw "Required file missing from deployment staging: $required"
                         }
 
                         Write-Host "PASS: $required"
                     }
 
+                    Write-Host ""
+                    Write-Host "All required application files are present in deployment staging."
+
                     $archive.Dispose()
 
-                    Write-Host ""
                     Write-Host "=== ARTIFACT INFORMATION ==="
 
                     Get-Item $artifact |
@@ -265,4 +273,5 @@ pipeline {
         }
     }
 }
+
 
