@@ -140,9 +140,9 @@ pipeline {
                         "package.json",
                         "package-lock.json",
                         "app.js",
-                        "bin\www",
-                        "routes\index.js",
-                        "routes\api.js"
+                        "bin/www",
+                        "routes/index.js",
+                        "routes/api.js"
                     )
 
                     foreach ($required in $requiredFiles) {
