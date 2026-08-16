@@ -139,6 +139,7 @@ pipeline {
                             $skip = $false
 
                             foreach ($pattern in $excludeFiles) {
+
                                 if ($_.Name -like $pattern) {
                                     $skip = $true
                                     break
@@ -146,6 +147,7 @@ pipeline {
                             }
 
                             -not $skip
+
                         } |
                         ForEach-Object {
 
@@ -182,7 +184,7 @@ pipeline {
                     }
 
                     Write-Host ""
-                    Write-Host "Creating Linux-compatible ZIP..."
+                    Write-Host "=== CREATING DEPLOYMENT ZIP ==="
 
                     Add-Type -AssemblyName System.IO.Compression
 
@@ -204,13 +206,11 @@ pipeline {
                                 $staging.Length
                             )
 
-                            $relativePath = $relativePath.TrimStart(
-                            $relativePath = $relativePath.TrimStart([char]92).TrimStart([char]47)
-                            )
+                            $relativePath = $relativePath.TrimStart([char]92)
 
                             $zipPath = $relativePath.Replace(
-                                "\",
-                                "/"
+                                [string][char]92,
+                                [string][char]47
                             )
 
                             Write-Host "Adding: $zipPath"
@@ -247,7 +247,7 @@ pipeline {
                     }
 
                     Write-Host ""
-                    Write-Host "=== VERIFYING ZIP ==="
+                    Write-Host "=== VERIFYING DEPLOYMENT ZIP ==="
 
                     $archive = [System.IO.Compression.ZipFile]::OpenRead(
                         $artifact
@@ -263,7 +263,7 @@ pipeline {
                         Write-Host "ZIP entries: $($entries.Count)"
 
                         Write-Host ""
-                        Write-Host "=== FIRST 40 ENTRIES ==="
+                        Write-Host "=== FIRST 40 ZIP ENTRIES ==="
 
                         $entries |
                             Select-Object -First 40 |
@@ -272,7 +272,7 @@ pipeline {
                             }
 
                         Write-Host ""
-                        Write-Host "=== CHECKING PATH SEPARATORS ==="
+                        Write-Host "=== CHECKING ZIP PATHS ==="
 
                         $badPaths = @(
                             $entries |
@@ -283,7 +283,7 @@ pipeline {
 
                         if ($badPaths.Count -gt 0) {
 
-                            Write-Host "ERROR: Backslash paths found:"
+                            Write-Host "ERROR: Windows-style paths found in ZIP."
 
                             $badPaths |
                                 Select-Object -First 20 |
@@ -291,7 +291,7 @@ pipeline {
                                     Write-Host $_
                                 }
 
-                            throw "ZIP contains Windows backslash paths."
+                            throw "ZIP contains invalid Windows path separators."
                         }
 
                         Write-Host "PASS: ZIP paths use forward slashes."
@@ -307,7 +307,7 @@ pipeline {
                         )
 
                         if ($nestedZip.Count -gt 0) {
-                            throw "Nested ZIP detected inside artifact."
+                            throw "Nested ZIP detected inside deployment artifact."
                         }
 
                         Write-Host "PASS: No nested ZIP."
@@ -375,6 +375,7 @@ pipeline {
                 $staging = Join-Path $env:WORKSPACE "deployment-staging"
 
                 if (Test-Path $staging) {
+
                     Remove-Item `
                         $staging `
                         -Recurse `
