@@ -206,7 +206,7 @@ pipeline {
                                 $staging.Length
                             )
 
-                            $relativePath = $relativePath.TrimStart([char]92)
+                            $relativePath = $relativePath.TrimStart([char[]](92,47))
 
                             $zipPath = $relativePath.Replace(
                                 [string][char]92,
