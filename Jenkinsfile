@@ -61,22 +61,8 @@ pipeline {
                 bat '''
                     @echo off
 
-                    npx pug views\\index.pug --check
-                    if errorlevel 1 exit /b 1
+                    node -e "const pug=require('pug'); const fs=require('fs'); const files=['views/index.pug','views/career.pug','views/projects.pug','views/badges.pug','views/architecture.pug','views/pricing.pug']; for (const f of files) { pug.compileFile(f); console.log('PASS: '+f); }"
 
-                    npx pug views\\career.pug --check
-                    if errorlevel 1 exit /b 1
-
-                    npx pug views\\projects.pug --check
-                    if errorlevel 1 exit /b 1
-
-                    npx pug views\\badges.pug --check
-                    if errorlevel 1 exit /b 1
-
-                    npx pug views\\architecture.pug --check
-                    if errorlevel 1 exit /b 1
-
-                    npx pug views\\pricing.pug --check
                     if errorlevel 1 exit /b 1
 
                     echo Pug template validation PASSED.
