@@ -91,72 +91,47 @@ pipeline {
                 powershell '''
                     $ErrorActionPreference = "Stop"
 
-                    Write-Host "Creating clean deployment staging directory..."
+                    $staging = Join-Path $env:WORKSPACE "deployment-staging"
+                    $artifact = Join-Path $env:WORKSPACE $env:ARTIFACT
 
-                    $workspace = $env:WORKSPACE
-                    $staging = Join-Path $workspace "deployment-staging"
-                    $artifact = Join-Path $workspace $env:ARTIFACT
+                    Write-Host "Creating clean deployment staging directory..."
 
                     if (Test-Path $staging) {
                         Remove-Item $staging -Recurse -Force
                     }
 
-                    if (Test-Path $artifact) {
-                        Remove-Item $artifact -Force
-                    }
-
-                    New-Item `
-                        -ItemType Directory `
-                        -Path $staging `
-                        -Force |
-                        Out-Null
+                    New-Item -ItemType Directory -Path $staging -Force | Out-Null
 
                     Write-Host "Copying application files..."
 
-                    $excludeDirectories = @(
+                    $robocopyArgs = @(
+                        $env:WORKSPACE,
+                        $staging,
+                        "/E",
+                        "/R:2",
+                        "/W:1",
+                        "/NFL",
+                        "/NDL",
+                        "/XD",
                         ".git",
                         "node_modules",
                         "terraform",
-                        "deployment-staging"
-                    )
-
-                    $excludeFiles = @(
+                        "deployment-staging",
+                        "/XF",
                         "*.zip",
                         ".env",
-                        "Jenkinsfile.backup",
-                        "Jenkinsfile.CD.backup",
-                        "Jenkinsfile.before-artifact-fix.bak"
+                        "*.bak"
                     )
 
-                    Get-ChildItem `
-                        -Path $workspace `
-                        -Force |
-                        Where-Object {
-                            $_.Name -notin $excludeDirectories
-                        } |
-                        Where-Object {
+                    & robocopy @robocopyArgs
 
-                            $skip = $false
+                    $robocopyExit = $LASTEXITCODE
 
-                            foreach ($pattern in $excludeFiles) {
+                    if ($robocopyExit -gt 7) {
+                        throw "robocopy failed with exit code $robocopyExit"
+                    }
 
-                                if ($_.Name -like $pattern) {
-                                    $skip = $true
-                                    break
-                                }
-                            }
-
-                            -not $skip
-
-                        } |
-                        ForEach-Object {
-
-                            Copy-Item `
-                                -Path $_.FullName `
-                                -Destination $staging `
-                                -Recurse `
-                                -Force
-                        }
+                    Write-Host "Application files copied successfully."
 
                     Write-Host ""
                     Write-Host "=== CHECKING REQUIRED APPLICATION FILES ==="
@@ -165,16 +140,14 @@ pipeline {
                         "package.json",
                         "package-lock.json",
                         "app.js",
-                        "bin/www",
-                        "routes/index.js",
-                        "routes/api.js"
+                        "bin\www",
+                        "routes\index.js",
+                        "routes\api.js"
                     )
 
                     foreach ($required in $requiredFiles) {
 
-                        $requiredPath = Join-Path `
-                            $staging `
-                            $required.Replace("/", "\")
+                        $requiredPath = Join-Path $staging $required
 
                         if (-not (Test-Path $requiredPath -PathType Leaf)) {
                             throw "Required file missing from deployment staging: $required"
@@ -184,7 +157,15 @@ pipeline {
                     }
 
                     Write-Host ""
+                    Write-Host "All required application files are present."
+
+                    if (Test-Path $artifact) {
+                        Remove-Item $artifact -Force
+                    }
+
+                    Write-Host ""
                     Write-Host "=== CREATING DEPLOYMENT ZIP ==="
+                    Write-Host $artifact
 
                     Add-Type -AssemblyName System.IO.Compression
 
@@ -206,39 +187,21 @@ pipeline {
                                 $staging.Length
                             )
 
-                            $relativePath = $relativePath.TrimStart([char[]](92,47))
+                            $relativePath = $relativePath.TrimStart(
+                                [char[]](92,47)
+                            )
 
-                            $zipPath = $relativePath.Replace(
+                            $relativePath = $relativePath.Replace(
                                 [string][char]92,
                                 [string][char]47
                             )
 
-                            Write-Host "Adding: $zipPath"
-
-                            $entry = $zip.CreateEntry(
-                                $zipPath,
+                            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                                $zip,
+                                $file.FullName,
+                                $relativePath,
                                 [System.IO.Compression.CompressionLevel]::Optimal
-                            )
-
-                            $inputStream = [System.IO.File]::OpenRead(
-                                $file.FullName
-                            )
-
-                            try {
-
-                                $outputStream = $entry.Open()
-
-                                try {
-                                    $inputStream.CopyTo($outputStream)
-                                }
-                                finally {
-                                    $outputStream.Dispose()
-                                }
-
-                            }
-                            finally {
-                                $inputStream.Dispose()
-                            }
+                            ) | Out-Null
                         }
 
                     }
@@ -262,42 +225,23 @@ pipeline {
 
                         Write-Host "ZIP entries: $($entries.Count)"
 
-                        Write-Host ""
-                        Write-Host "=== FIRST 40 ZIP ENTRIES ==="
-
-                        $entries |
-                            Select-Object -First 40 |
-                            ForEach-Object {
-                                Write-Host $_
-                            }
-
-                        Write-Host ""
-                        Write-Host "=== CHECKING ZIP PATHS ==="
-
-                        $badPaths = @(
-                            $entries |
-                            Where-Object {
-                                $_ -match "\\"
-                            }
+                        $requiredZipFiles = @(
+                            "package.json",
+                            "package-lock.json",
+                            "app.js",
+                            "bin/www",
+                            "routes/index.js",
+                            "routes/api.js"
                         )
 
-                        if ($badPaths.Count -gt 0) {
+                        foreach ($requiredZip in $requiredZipFiles) {
 
-                            Write-Host "ERROR: Windows-style paths found in ZIP."
+                            if ($entries -notcontains $requiredZip) {
+                                throw "Required file missing from ZIP: $requiredZip"
+                            }
 
-                            $badPaths |
-                                Select-Object -First 20 |
-                                ForEach-Object {
-                                    Write-Host $_
-                                }
-
-                            throw "ZIP contains invalid Windows path separators."
+                            Write-Host "PASS ZIP: $requiredZip"
                         }
-
-                        Write-Host "PASS: ZIP paths use forward slashes."
-
-                        Write-Host ""
-                        Write-Host "=== CHECKING NESTED ZIP ==="
 
                         $nestedZip = @(
                             $entries |
@@ -311,29 +255,6 @@ pipeline {
                         }
 
                         Write-Host "PASS: No nested ZIP."
-
-                        Write-Host ""
-                        Write-Host "=== CHECKING REQUIRED ZIP FILES ==="
-
-                        foreach ($required in $requiredFiles) {
-
-                            $zipRequired = $required.Replace(
-                                "\",
-                                "/"
-                            )
-
-                            $found = $entries |
-                                Where-Object {
-                                    $_.ToLowerInvariant() -eq
-                                    $zipRequired.ToLowerInvariant()
-                                }
-
-                            if (-not $found) {
-                                throw "Required file missing from ZIP: $required"
-                            }
-
-                            Write-Host "PASS: $required"
-                        }
 
                     }
                     finally {
@@ -372,12 +293,9 @@ pipeline {
 
         always {
             powershell '''
-                $staging = Join-Path $env:WORKSPACE "deployment-staging"
-
-                if (Test-Path $staging) {
-
+                if (Test-Path "deployment-staging") {
                     Remove-Item `
-                        $staging `
+                        "deployment-staging" `
                         -Recurse `
                         -Force `
                         -ErrorAction SilentlyContinue
