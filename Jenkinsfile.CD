@@ -70,37 +70,29 @@ pipeline {
         stage('Azure Login') {
             steps {
                 withCredentials([
-                    azureServicePrincipal(
-                        credentialsId: '41c41413-cef6-44ef-a611-7fad35d21b57',
-                        subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
-                        clientIdVariable: 'AZURE_CLIENT_ID',
-                        clientSecretVariable: 'AZURE_CLIENT_SECRET',
-                        tenantIdVariable: 'AZURE_TENANT_ID'
+                    usernamePassword(
+                        credentialsId: 'azure-service-principal',
+                        usernameVariable: 'AZURE_CLIENT_ID',
+                        passwordVariable: 'AZURE_CLIENT_SECRET'
+                    ),
+                    string(
+                        credentialsId: 'azure-tenant-id',
+                        variable: 'AZURE_TENANT_ID'
+                    ),
+                    string(
+                        credentialsId: 'azure-subscription-id',
+                        variable: 'AZURE_SUBSCRIPTION_ID'
                     )
                 ]) {
                     bat '''
-                    @echo off
-
-                    echo Enabling Azure/Oryx build automation...
-
-                    az webapp config appsettings set ^
-                      --resource-group "rg-techlaunch" ^
-                      --name "%APP_NAME%" ^
-                      --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
-
-                    if errorlevel 1 exit /b 1
-
-                    echo Azure/Oryx build automation enabled.
-                bat '''
                         @echo off
+
                         echo Authenticating to Azure...
 
-                        az login ^
-                          --service-principal ^
+                        az login --service-principal ^
                           --username "%AZURE_CLIENT_ID%" ^
                           --password "%AZURE_CLIENT_SECRET%" ^
-                          --tenant "%AZURE_TENANT_ID%" ^
-                          --output none
+                          --tenant "%AZURE_TENANT_ID%"
 
                         if errorlevel 1 exit /b 1
 
@@ -109,17 +101,12 @@ pipeline {
 
                         if errorlevel 1 exit /b 1
 
-                        echo Azure authentication successful.
-
-                        az account show ^
-                          --query "{subscription:id,tenant:tenantId}" ^
-                          -o table
+                        echo Azure authentication PASSED.
                     '''
                 }
             }
         }
-
-        stage('Deploy Artifact') {
+stage('Deploy Artifact') {
             steps {
                 withCredentials([
                     azureServicePrincipal(
