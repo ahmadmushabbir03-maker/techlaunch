@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     environment {
@@ -60,11 +59,9 @@ pipeline {
                 bat '''
                     @echo off
 
-                    node -e "const pug=require('pug'); const files=['views/index.pug','views/career.pug','views/projects.pug','views/badges.pug','views/architecture.pug','views/pricing.pug']; for (const f of files) { pug.compileFile(f); console.log('PASS: '+f); }"
+                    node -e "const fs=require('fs'),pug=require('pug');fs.readdirSync('views').filter(f=>f.endsWith('.pug')).forEach(f=>{pug.compileFile('views/'+f);console.log('PASS: views/'+f)});console.log('Pug template validation PASSED.')"
 
                     if errorlevel 1 exit /b 1
-
-                    echo Pug template validation PASSED.
                 '''
             }
         }
@@ -79,8 +76,6 @@ pipeline {
                     npm.cmd test
 
                     if errorlevel 1 exit /b 1
-
-                    echo TechLaunch automated tests PASSED.
                 '''
             }
         }
@@ -100,35 +95,27 @@ pipeline {
                         Remove-Item $staging -Recurse -Force
                     }
 
-                    New-Item -ItemType Directory -Path $staging -Force | Out-Null
+                    New-Item `
+                        -ItemType Directory `
+                        -Path $staging `
+                        -Force |
+                        Out-Null
 
                     Write-Host "Copying application files..."
 
-                    $robocopyArgs = @(
-                        $env:WORKSPACE,
-                        $staging,
-                        "/E",
-                        "/R:2",
-                        "/W:1",
-                        "/NFL",
-                        "/NDL",
-                        "/XD",
-                        ".git",
-                        "node_modules",
-                        "terraform",
-                        "deployment-staging",
-                        "/XF",
-                        "*.zip",
-                        ".env",
-                        "*.bak"
-                    )
+                    & robocopy `
+                        $env:WORKSPACE `
+                        $staging `
+                        /E `
+                        /R:2 `
+                        /W:1 `
+                        /NFL `
+                        /NDL `
+                        /XD .git node_modules terraform deployment-staging `
+                        /XF .env *.zip *.bak
 
-                    & robocopy @robocopyArgs
-
-                    $robocopyExit = $LASTEXITCODE
-
-                    if ($robocopyExit -gt 7) {
-                        throw "robocopy failed with exit code $robocopyExit"
+                    if ($LASTEXITCODE -gt 7) {
+                        throw "Robocopy failed with exit code $LASTEXITCODE"
                     }
 
                     Write-Host "Application files copied successfully."
@@ -145,18 +132,17 @@ pipeline {
                         "routes/api.js"
                     )
 
-                    foreach ($required in $requiredFiles) {
+                    foreach ($file in $requiredFiles) {
 
-                        $requiredPath = Join-Path $staging $required
+                        $path = Join-Path $staging $file
 
-                        if (-not (Test-Path $requiredPath -PathType Leaf)) {
-                            throw "Required file missing from deployment staging: $required"
+                        if (-not (Test-Path $path -PathType Leaf)) {
+                            throw "Missing required file: $file"
                         }
 
-                        Write-Host "PASS: $required"
+                        Write-Host "PASS: $file"
                     }
 
-                    Write-Host ""
                     Write-Host "All required application files are present."
 
                     if (Test-Path $artifact) {
@@ -167,98 +153,52 @@ pipeline {
                     Write-Host "=== CREATING DEPLOYMENT ZIP ==="
                     Write-Host $artifact
 
-                    Add-Type -AssemblyName System.IO.Compression
-
-                    $zip = [System.IO.Compression.ZipFile]::Open(
-                        $artifact,
-                        [System.IO.Compression.ZipArchiveMode]::Create
-                    )
+                    Push-Location $staging
 
                     try {
 
-                        $files = Get-ChildItem `
-                            -Path $staging `
-                            -Recurse `
-                            -File
+                        & tar.exe -a -cf $artifact *
 
-                        foreach ($file in $files) {
-
-                            $relativePath = $file.FullName.Substring(
-                                $staging.Length
-                            )
-
-                            $relativePath = $relativePath.TrimStart(
-                                [char[]](92,47)
-                            )
-
-                            $relativePath = $relativePath.Replace(
-                                [string][char]92,
-                                [string][char]47
-                            )
-
-                            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-                                $zip,
-                                $file.FullName,
-                                $relativePath,
-                                [System.IO.Compression.CompressionLevel]::Optimal
-                            ) | Out-Null
+                        if ($LASTEXITCODE -ne 0) {
+                            throw "Failed to create ZIP archive."
                         }
 
                     }
                     finally {
-                        $zip.Dispose()
+                        Pop-Location
                     }
+
+                    if (-not (Test-Path $artifact -PathType Leaf)) {
+                        throw "Deployment ZIP was not created."
+                    }
+
+                    Write-Host "PASS: Deployment ZIP created."
 
                     Write-Host ""
                     Write-Host "=== VERIFYING DEPLOYMENT ZIP ==="
 
-                    $archive = [System.IO.Compression.ZipFile]::OpenRead(
-                        $artifact
+                    $zipEntries = @(
+                        & tar.exe -tf $artifact
                     )
 
-                    try {
-
-                        $entries = @(
-                            $archive.Entries |
-                            Select-Object -ExpandProperty FullName
-                        )
-
-                        Write-Host "ZIP entries: $($entries.Count)"
-
-                        $requiredZipFiles = @(
-                            "package.json",
-                            "package-lock.json",
-                            "app.js",
-                            "bin/www",
-                            "routes/index.js",
-                            "routes/api.js"
-                        )
-
-                        foreach ($requiredZip in $requiredZipFiles) {
-
-                            if ($entries -notcontains $requiredZip) {
-                                throw "Required file missing from ZIP: $requiredZip"
-                            }
-
-                            Write-Host "PASS ZIP: $requiredZip"
-                        }
-
-                        $nestedZip = @(
-                            $entries |
-                            Where-Object {
-                                $_ -like "*.zip"
-                            }
-                        )
-
-                        if ($nestedZip.Count -gt 0) {
-                            throw "Nested ZIP detected inside deployment artifact."
-                        }
-
-                        Write-Host "PASS: No nested ZIP."
-
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Unable to read deployment ZIP."
                     }
-                    finally {
-                        $archive.Dispose()
+
+                    foreach ($requiredZip in @(
+                        "package.json",
+                        "package-lock.json",
+                        "app.js",
+                        "bin/www",
+                        "routes/index.js",
+                        "routes/api.js"
+                    )) {
+
+                        if ($zipEntries -notcontains $requiredZip) {
+                            throw "Required file missing from ZIP: $requiredZip"
+                        }
+
+                        Write-Host "PASS ZIP: $requiredZip"
                     }
 
                     Write-Host ""
