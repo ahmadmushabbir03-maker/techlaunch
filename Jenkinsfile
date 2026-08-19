@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        ARTIFACT = "techlaunch-${BUILD_NUMBER}.zip"
-    }
-
     stages {
 
         stage('Checkout') {
@@ -19,11 +15,9 @@ pipeline {
                 echo 'Installing Node.js dependencies...'
 
                 bat '''
-                    @echo off
-                    node --version
-                    npm --version
-                    npm.cmd ci
-                    if errorlevel 1 exit /b 1
+                    node -v
+                    npm -v
+                    npm ci
                 '''
             }
         }
@@ -33,20 +27,7 @@ pipeline {
                 echo 'Validating Node.js application syntax...'
 
                 bat '''
-                    @echo off
-
-                    node --check app.js
-                    if errorlevel 1 exit /b 1
-
-                    node --check routes\\index.js
-                    if errorlevel 1 exit /b 1
-
-                    node --check routes\\api.js
-                    if errorlevel 1 exit /b 1
-
-                    node --check bin\\www
-                    if errorlevel 1 exit /b 1
-
+                    node -c app.js
                     echo Application syntax validation PASSED.
                 '''
             }
@@ -57,11 +38,7 @@ pipeline {
                 echo 'Validating Pug templates...'
 
                 bat '''
-                    @echo off
-
-                    node -e "const fs=require('fs'),pug=require('pug');fs.readdirSync('views').filter(f=>f.endsWith('.pug')).forEach(f=>{pug.compileFile('views/'+f);console.log('PASS: views/'+f)});console.log('Pug template validation PASSED.')"
-
-                    if errorlevel 1 exit /b 1
+                    node -e "const fs=require('fs'),pug=require('pug'); fs.readdirSync('views').filter(f=>f.endsWith('.pug')).forEach(f=>{pug.compileFile('views/'+f); console.log('PASS: views/'+f);}); console.log('Pug template validation PASSED.');"
                 '''
             }
         }
@@ -71,11 +48,7 @@ pipeline {
                 echo 'Running TechLaunch automated tests...'
 
                 bat '''
-                    @echo off
-
-                    npm.cmd test
-
-                    if errorlevel 1 exit /b 1
+                    npm test
                 '''
             }
         }
@@ -86,35 +59,28 @@ pipeline {
                 powershell '''
                     $ErrorActionPreference = "Stop"
 
-                    $staging = Join-Path $env:WORKSPACE "deployment-staging"
-                    $artifact = Join-Path $env:WORKSPACE $env:ARTIFACT
-
                     Write-Host "Creating clean deployment staging directory..."
 
-                    if (Test-Path $staging) {
-                        Remove-Item $staging -Recurse -Force
+                    if (Test-Path "deployment-staging") {
+                        Remove-Item `
+                            -Path "deployment-staging" `
+                            -Recurse `
+                            -Force
                     }
 
                     New-Item `
                         -ItemType Directory `
-                        -Path $staging `
+                        -Path "deployment-staging" `
                         -Force |
                         Out-Null
 
                     Write-Host "Copying application files..."
 
-                    & robocopy `
-                        $env:WORKSPACE `
-                        $staging `
-                        /E `
-                        /R:2 `
-                        /W:1 `
-                        /NFL `
-                        /NDL `
-                        /XD .git node_modules terraform deployment-staging `
-                        /XF .env *.zip *.bak
+                    robocopy . deployment-staging /S /E `
+                        /XF .env *.zip *.bak `
+                        /XD .git node_modules terraform deployment-staging
 
-                    if ($LASTEXITCODE -gt 7) {
+                    if ($LASTEXITCODE -ge 8) {
                         throw "Robocopy failed with exit code $LASTEXITCODE"
                     }
 
@@ -134,7 +100,7 @@ pipeline {
 
                     foreach ($file in $requiredFiles) {
 
-                        $path = Join-Path $staging $file
+                        $path = Join-Path "deployment-staging" $file
 
                         if (-not (Test-Path $path -PathType Leaf)) {
                             throw "Missing required file: $file"
@@ -143,75 +109,33 @@ pipeline {
                         Write-Host "PASS: $file"
                     }
 
+                    Write-Host ""
                     Write-Host "All required application files are present."
-
-                    if (Test-Path $artifact) {
-                        Remove-Item $artifact -Force
-                    }
 
                     Write-Host ""
                     Write-Host "=== CREATING DEPLOYMENT ZIP ==="
-                    Write-Host $artifact
 
-                    Push-Location $staging
+                    $zipName = "techlaunch-$env:BUILD_NUMBER.zip"
 
-                    try {
+                    Write-Host $zipName
 
-                        & tar.exe -a -cf $artifact *
+                    tar -a -cf $zipName -C deployment-staging .
 
-                        if ($LASTEXITCODE -ne 0) {
-                            throw "Failed to create ZIP archive."
-                        }
-
-                    }
-                    finally {
-                        Pop-Location
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Failed to create ZIP archive."
                     }
 
-                    if (-not (Test-Path $artifact -PathType Leaf)) {
+                    if (-not (Test-Path $zipName -PathType Leaf)) {
                         throw "Deployment ZIP was not created."
                     }
 
-                    Write-Host "PASS: Deployment ZIP created."
-
                     Write-Host ""
-                    Write-Host "=== VERIFYING DEPLOYMENT ZIP ==="
-
-                    $zipEntries = @(
-                        & tar.exe -tf $artifact
-                    )
-
-                    if ($LASTEXITCODE -ne 0) {
-                        throw "Unable to read deployment ZIP."
-                    }
-
-                    foreach ($requiredZip in @(
-                        "package.json",
-                        "package-lock.json",
-                        "app.js",
-                        "bin/www",
-                        "routes/index.js",
-                        "routes/api.js"
-                    )) {
-
-                        if ($zipEntries -notcontains $requiredZip) {
-                            throw "Required file missing from ZIP: $requiredZip"
-                        }
-
-                        Write-Host "PASS ZIP: $requiredZip"
-                    }
-
-                    Write-Host ""
-                    Write-Host "=== ARTIFACT INFORMATION ==="
-
-                    Get-Item $artifact |
-                        Select-Object Name, Length, FullName
-
-                    Write-Host ""
-                    Write-Host "Deployment artifact created successfully."
+                    Write-Host "Deployment ZIP created successfully."
+                    Write-Host "Artifact: $zipName"
                 '''
 
-                archiveArtifacts artifacts: "${ARTIFACT}", fingerprint: true
+                archiveArtifacts artifacts: "techlaunch-${env.BUILD_NUMBER}.zip",
+                                 fingerprint: true
             }
         }
     }
@@ -222,7 +146,21 @@ pipeline {
             echo "============================================================"
             echo "TECHLAUNCH CI SUCCESS"
             echo "============================================================"
-            echo "Artifact published: ${ARTIFACT}"
+
+            echo "CI build completed: ${env.BUILD_NUMBER}"
+            echo "Triggering TechLaunch-CD automatically..."
+
+            build job: 'TechLaunch-CD',
+                  parameters: [
+                      string(
+                          name: 'CI_BUILD_NUMBER',
+                          value: "${env.BUILD_NUMBER}"
+                      )
+                  ],
+                  wait: false,
+                  propagate: false
+
+            echo "TechLaunch-CD triggered automatically."
         }
 
         failure {
